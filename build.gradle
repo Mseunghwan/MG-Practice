@@ -31,15 +31,24 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+    // MyBatis 및 Oracle 의존성
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
+//    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // MyBatis 테스트를 위한 의존성
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
 }
 
 tasks.named('test') {
