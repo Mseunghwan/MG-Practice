@@ -5,10 +5,10 @@
 <mapper namespace="jpabook.mgpractice.mapper.AccountMapper">
 
     <insert id="insertAccount">
-        <selectKey keyProperty="accountId" resultType="java.lang.long" order="BEFORE">
-            SELECT account_seq.NEXTVAL FROM DUAL
+        <selectKey keyProperty="accountId" resultType="long" order="BEFORE">
+            SELECT NEXTVAL('account_seq')
         </selectKey>
-        INSERT INTO (account_id, username, balance)
+        INSERT INTO account (account_id, username, balance)
         VALUES (#{accountId}, #{username}, #{balance})
     </insert>
 

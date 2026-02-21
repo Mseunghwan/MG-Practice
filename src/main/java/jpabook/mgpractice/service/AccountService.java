@@ -30,7 +30,7 @@ public class AccountService {
     // 회원 보유 계좌 목록 조회
     @Transactional(readOnly = true)
     public List<Account> getMyAccount(String username){
-        return accountMapper.findAccountByUsername(username);
+        return accountMapper.findAccountsByUsername(username);
     }
 
 }

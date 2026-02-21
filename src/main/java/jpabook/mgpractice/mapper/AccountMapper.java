@@ -15,7 +15,7 @@ public interface AccountMapper {
     Account findByAccountId(Long accountId);
 
     // 사용자 모든 계좌 목록 조회
-    List<Account> findAccountByUsername(String username);
+    List<Account> findAccountsByUsername(String username);
 
     // 잔액 업데이트
     void updateBalance(@Param("accountId") Long accountId, @Param("amount") Long amount);
