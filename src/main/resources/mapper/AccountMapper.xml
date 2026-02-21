@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="jpabook.mgpractice.mapper.AccountMapper">
+
+    <insert id="insertAccount">
+        <selectKey keyProperty="accountId" resultType="java.lang.long" order="BEFORE">
+            SELECT account_seq.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO (account_id, username, balance)
+        VALUES (#{accountId}, #{username}, #{balance})
+    </insert>
+
+    <select id="findByAccountId" resultType="jpabook.mgpractice.domain.Account">
+        SELECT account_id AS accountId,
+               username,
+               balance,
+               created_at AS createdAt
+        FROM account
+        WHERE account_id = #{accountId}
+    </select>
+
+    <select id="findAccountsByUsername" resultType="jpabook.mgpractice.domain.Account">
+        SELECT account_id AS accountId,
+               username,
+               balance,
+               created_at AS createdAt
+        FROM account
+        WHERE username = #{username}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
