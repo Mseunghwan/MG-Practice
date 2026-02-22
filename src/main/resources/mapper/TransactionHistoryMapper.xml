@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="jpabook.mgpractice.mapper.TransactionHistoryMapper">
+
+    <insert id="insertHistory">
+
+        <selectKey keyProperty="historyId" resultType="long" order="BEFORE">
+            SELECT NEXTVAL('history_seq')
+        </selectKey>
+        INSERT INTO transaction_history (history_id, from_account_id, to_account_id, amount, status)
+        VALUES (#{historyId}, #{fromAccountId}, #{toAccountId}, #{amount}, #{status})
+    </insert>
+
+</mapper>
