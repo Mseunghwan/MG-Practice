@@ -15,15 +15,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 망분리 환경 및 개발 편의를 위해 CSRF 토큰 검증을 잠시 비활성화합니다.
-                // 실무 은행망에서는 CSRF 방어가 필수적으로 들어갑니다.
+                // 망분리 환경 및 개발 편의를 위해 CSRF 토큰 검증을 잠시 비활성화
+                // 실무 은행망에서는 CSRF 방어가 필수
                 .csrf(csrf -> csrf.disable())
 
                 // URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 메인 페이지, 회원가입, 로그인 페이지 및 정적 리소스는 누구나 접근 가능합니다.
-                        .requestMatchers("/", "/signup", "/login", "/css/**", "/js/**", "/h2-console/**").permitAll()
-                        // 그 외의 모든 요청(예: 계좌 이체, 조회 등)은 로그인한 사용자만 접근할 수 있습니다.
+                        // 메인 페이지, 회원가입, 로그인 페이지 및 정적 리소스는 누구나 접근 가능
+                        .requestMatchers(
+                                "/signup",
+                                "/login",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // 그 외의 모든 요청(예: 계좌 이체, 조회 등)은 로그인한 사용자만 접근
                         .anyRequest().authenticated()
                 )
 
@@ -41,11 +50,11 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
-                        .invalidateHttpSession(true)     // 안전한 로그아웃을 위해 세션을 완전히 파기합니다.
+                        .invalidateHttpSession(true)     // 안전한 로그아웃을 위해 세션을 완전히 파기
                         .permitAll()
                 )
 
-                // H2 데이터베이스 콘솔 등 iframe을 사용하는 화면이 깨지지 않도록 옵션을 끕니다.
+                // H2 데이터베이스 콘솔 등 iframe을 사용하는 화면이 깨지지 않도록 옵션을 끔
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
