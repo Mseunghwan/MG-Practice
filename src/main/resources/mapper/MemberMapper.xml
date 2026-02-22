@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="jpabook.mgpractice.mapper.MemberMapper">
 
-    <insert id="insertMember" useGeneratedKeys="true" keyProperty="memberId" keyColumn="memberId">
+    <insert id="insertMember" useGeneratedKeys="true" keyProperty="memberId" keyColumn="member_id">
         INSERT INTO member (username, password, name, role)
         VALUES (#{username}, #{password}, #{name}, #{role})
     </insert>
@@ -12,5 +12,18 @@
         FROM member
         WHERE username = #{username}
     </select>
+
+    <update id="updateMember" parameterType="jpabook.mgpractice.domain.Member">
+        UPDATE MEMBER
+        <set>
+            <if test="password != null and password != ''">
+                PASSWORD = #{password},
+            </if>
+            <if test="name != null and name != ''">
+                NAME = #{name}
+            </if>
+        </set>
+        WHERE USERNAME = #{username}
+    </update>
 
 </mapper>
