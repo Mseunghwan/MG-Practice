@@ -49,4 +49,42 @@ public class AccountMapperTest {
         assertThat(accounts.get(0).getUsername()).isEqualTo(username);
     }
 
+    @Test
+    @DisplayName("계좌 정보가 DB에 정상적으로 INSERT 되고 조회되어야 한다")
+    void insertAndFindAccount() {
+        // given
+        Account account = Account.builder()
+                .username("testUser")
+                .balance(50000L)
+                .build();
+
+        // when
+        accountMapper.insertAccount(account);
+        Account savedAccount = accountMapper.findByAccountId(account.getAccountId());
+
+        // then
+        assertThat(savedAccount).isNotNull();
+        assertThat(savedAccount.getUsername()).isEqualTo("testUser");
+        assertThat(savedAccount.getBalance()).isEqualTo(50000L);
+    }
+
+    @Test
+    @DisplayName("계좌의 잔액이 정상적으로 업데이트되어야 한다")
+    void updateBalanceTest() {
+        // given
+        Account account = Account.builder()
+                .username("tester")
+                .balance(10000L)
+                .build();
+        accountMapper.insertAccount(account);
+        Long accountId = account.getAccountId();
+
+        // when (3,000원 출금 상황 가정)
+        accountMapper.updateBalance(accountId, -3000L);
+
+        // then
+        Account updatedAccount = accountMapper.findByAccountId(accountId);
+        assertThat(updatedAccount.getBalance()).isEqualTo(7000L);
+    }
+
 }

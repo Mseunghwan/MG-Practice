@@ -47,7 +47,7 @@ public class AccountService {
                 throw new IllegalArgumentException("출금할 계좌를 찾을 수 없습니다.");
             }
             if (fromAccount.getBalance() < amount) {
-                throw new IllegalArgumentException("계좌의 잔액이 부족합니다.");
+                throw new IllegalArgumentException("잔액이 부족합니다.");
             }
 
             // 2. 입금 계좌 조회

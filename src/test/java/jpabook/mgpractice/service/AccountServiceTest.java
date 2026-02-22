@@ -2,44 +2,96 @@ package jpabook.mgpractice.service;
 
 import jpabook.mgpractice.domain.Account;
 import jpabook.mgpractice.mapper.AccountMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class) // 가짜 객체를 만드는 Mockito
+@Slf4j
+@SpringBootTest
+@Transactional
 public class AccountServiceTest {
 
-    @Mock // 가짜 매퍼 객체를 생성. 실제 DB 타지 않음
-    private AccountMapper accountMapper;
-
-    @InjectMocks // 생성된 가짜 매퍼를 AccountService에 주입
+    @Autowired
     private AccountService accountService;
 
-    @Test
-    @DisplayName("계좌 개설 로직이 정상적으로 수행되면 생성된 ID 반환")
-    void createdAccountSuccess(){
-        // given
-        String username = "test";
-        Long balance = 50000L;
+    @Autowired
+    private AccountMapper accountMapper;
 
-        // 매퍼 insertAccount 호출 시 가짜로 ID를 100L로 세팅해준다고 가정함
-        // 실제 DB 안쓰기에 가능
-        Account mockAccount = Account.builder().accountId(100L).build();
+    private Long fromAccountId;
+    private Long toAccountId;
+
+    @BeforeEach
+    void setUp() {
+        // 테스트 전 송금/수취용 계좌 2개를 미리 생성
+        fromAccountId = accountService.createAccount("sender", 10000L); // 출금 계좌 잔액 10,000원
+        toAccountId = accountService.createAccount("receiver", 0L);     // 입금 계좌 잔액 0원
+    }
+
+    @Test
+    @DisplayName("계좌 개설 로직이 정상적으로 수행되면 생성된 ID를 반환")
+    void createAccount() {
+
+        // given
+        String username = "Mserna";
+        Long balance = 50000L;
 
         // when
         Long generatedId = accountService.createAccount(username, balance);
 
         // then
-        // 매퍼의 insertAccount 메서드가 실제 호출되었는지 검증
-        verify(accountMapper).insertAccount(any(Account.class));
-        System.out.println("서비스 호출 완료");
-
+        Account savedAccount = accountMapper.findByAccountId(generatedId);
+        assertThat(savedAccount).isNotNull();
+        assertThat(savedAccount.getUsername()).isEqualTo(username);
+        assertThat(savedAccount.getBalance()).isEqualTo(balance);
+        log.info("서비스 호출 및 DB 저장 완료. 발급된 ID : {}", generatedId);
     }
+
+    @Test
+    @DisplayName("정상 이체 : 잔액이 올바르게 차감 및 증액 되어야 함")
+    void transfer_success() {
+        // given
+        Long transferAmount = 3000L;
+
+        // when
+        accountService.transfer(fromAccountId, toAccountId, transferAmount);
+
+        // then
+        Account fromAccount = accountMapper.findByAccountId(fromAccountId);
+        Account toAccount = accountMapper.findByAccountId(toAccountId);
+
+        assertThat(fromAccount.getBalance()).isEqualTo(7000L);
+        assertThat(toAccount.getBalance()).isEqualTo(3000L);
+
+        log.info("정상 이체 완료. 송금인 잔액: {}, 수취인 잔액: {}", fromAccount.getBalance(), toAccount.getBalance());
+    }
+
+    @Test
+    @DisplayName("이체 실패 (잔액 부족): 메인 트랜잭션은 롤백되어 잔액이 유지되어야 합니다.")
+    void transfer_fail_insufficient_balance() {
+        // given
+        Long overAmount = 20000L; // 잔액보다 큰 금액 시도
+
+        // when & then
+        assertThatThrownBy(() -> accountService.transfer(fromAccountId, toAccountId, overAmount))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("잔액이 부족합니다.");
+
+        // 예외 발생으로 롤백 검증
+        Account fromAccount = accountMapper.findByAccountId(fromAccountId);
+        Account toAccount = accountMapper.findByAccountId(toAccountId);
+
+        assertThat(fromAccount.getBalance()).isEqualTo(10000L);
+        assertThat(toAccount.getBalance()).isEqualTo(0L);
+
+        log.info("잔액 부족 예외 발생 및 롤백 검증 완료. 송금인 잔액 유지: {}", fromAccount.getBalance());
+    }
+
 
 }

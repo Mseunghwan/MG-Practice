@@ -10,7 +10,7 @@
     <select id="findByUsername" resultType="jpabook.mgpractice.domain.Member">
         SELECT member_id, username, password, name, role, created_at
         FROM member
-        WHERE username = ${username}
+        WHERE username = #{username}
     </select>
 
 </mapper>
