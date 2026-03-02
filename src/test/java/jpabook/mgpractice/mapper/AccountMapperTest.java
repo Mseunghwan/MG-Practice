@@ -5,12 +5,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @MybatisTest // MyBatis 관련 설정만 불러와 테스트 속도 빠름
+@Sql(scripts = "/test-data.sql")
 public class AccountMapperTest {
 
     @Autowired

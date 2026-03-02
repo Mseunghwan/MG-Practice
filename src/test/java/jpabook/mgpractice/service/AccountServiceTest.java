@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -24,11 +25,20 @@ public class AccountServiceTest {
     @Autowired
     private AccountMapper accountMapper;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate; // 회원 데이터 사전 삽입을 위해 추가
+
     private Long fromAccountId;
     private Long toAccountId;
 
     @BeforeEach
     void setUp() {
+        // 외래 키(FK_ACCOUNT_MEMBER) 제약 조건을 통과하기 위해
+        // 테스트에 사용될 회원(sender, receiver, Mserna)을 Member 테이블에 미리 삽입합니다.
+        jdbcTemplate.update("INSERT INTO member (username, password, name, role) VALUES (?, ?, ?, ?)", "sender", "1234", "Sender", "ROLE_USER");
+        jdbcTemplate.update("INSERT INTO member (username, password, name, role) VALUES (?, ?, ?, ?)", "receiver", "1234", "Receiver", "ROLE_USER");
+        jdbcTemplate.update("INSERT INTO member (username, password, name, role) VALUES (?, ?, ?, ?)", "Mserna", "1234", "Mserna", "ROLE_USER");
+
         // 테스트 전 송금/수취용 계좌 2개를 미리 생성
         fromAccountId = accountService.createAccount("sender", 10000L); // 출금 계좌 잔액 10,000원
         toAccountId = accountService.createAccount("receiver", 0L);     // 입금 계좌 잔액 0원
