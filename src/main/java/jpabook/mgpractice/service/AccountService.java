@@ -56,12 +56,19 @@ public class AccountService {
                 throw new IllegalArgumentException("입금할 계좌를 찾을 수 없습니다.");
             }
 
-            // 3. 잔액 업데이트
-            accountMapper.updateBalance(fromAccountId, -amount);
-            accountMapper.updateBalance(toAccountId, amount);
+            // 만약, 10억원 이상 이체라면? 부서장의 허락
+            if(amount > 1_000_000_000L){
+                transactionHistoryService.insertHistory(fromAccountId, toAccountId, amount, "PENDING");
+                sendSmsToManager(fromAccountId, amount);
+            } else {
 
-            // 4. 성공 시 이력 기록
-            transactionHistoryService.insertHistory(fromAccountId, toAccountId, amount, "SUCCESS");
+                // 3. 잔액 업데이트
+                accountMapper.updateBalance(fromAccountId, -amount);
+                accountMapper.updateBalance(toAccountId, amount);
+
+                // 4. 성공 시 이력 기록
+                transactionHistoryService.insertHistory(fromAccountId, toAccountId, amount, "SUCCESS");
+            }
 
         } catch (Exception e) {
             // 5. 실패 시 이력 기록
@@ -71,6 +78,12 @@ public class AccountService {
             // 데이터베이스 롤백을 트리거하기 위해 예외를 다시 던짐
             throw e;
         }
+    }
+
+    // 문자가 전송되는 기능을 연습하기 위한 임의의 메서드입니다.
+    // 실제 실무에서는 외부 SMS API와 연동된 별도의 Service 클래스를 호출합니다.
+    private void sendSmsToManager(Long fromAccountId, Long amount) {
+        System.out.println("[SMS 시스템] 부장님, " + fromAccountId + " 계좌에서 " + amount + "원 거액 이체 승인 대기 건이 발생했습니다. 결재 바랍니다.");
     }
 
 }
